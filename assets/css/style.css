@@ -1,0 +1,21 @@
+body {
+  font-size: 0.95rem;
+}
+
+.mobile-card {
+  max-width: 420px;
+}
+
+.card {
+  border: 0;
+}
+
+.table > :not(caption) > * > * {
+  white-space: nowrap;
+}
+
+@media (max-width: 576px) {
+  .navbar-brand {
+    font-size: 1rem;
+  }
+}
