@@ -19,3 +19,8 @@ body {
     font-size: 1rem;
   }
 }
+
+.receipt-no-input {
+  max-width: 10rem;
+  min-width: 7rem;
+}

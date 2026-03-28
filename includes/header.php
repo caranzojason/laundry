@@ -37,8 +37,8 @@ $user = currentUser();
 </nav>
 <main class="container py-3 py-md-4">
   <?php if ($msg = getFlash('success')): ?>
-    <div class="alert alert-success"><?= htmlspecialchars($msg) ?></div>
+    <div class="alert alert-success js-auto-dismiss-flash" role="alert"><?= htmlspecialchars($msg) ?></div>
   <?php endif; ?>
   <?php if ($msg = getFlash('error')): ?>
-    <div class="alert alert-danger"><?= htmlspecialchars($msg) ?></div>
+    <div class="alert alert-danger js-auto-dismiss-flash" role="alert"><?= htmlspecialchars($msg) ?></div>
   <?php endif; ?>

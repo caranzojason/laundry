@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="card-body p-4">
       <h1 class="h4 mb-3 text-center">Laundry System Login</h1>
       <?php if ($msg = getFlash('error')): ?>
-        <div class="alert alert-danger"><?= htmlspecialchars($msg) ?></div>
+        <div class="alert alert-danger js-auto-dismiss-flash" role="alert"><?= htmlspecialchars($msg) ?></div>
       <?php endif; ?>
       <form method="post" class="vstack gap-3">
         <div>
@@ -64,5 +64,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
   </div>
 </div>
+<script src="/laundry/laundry/assets/js/flash-auto-dismiss.js"></script>
 </body>
 </html>

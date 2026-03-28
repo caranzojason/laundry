@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $paymentMethod = $_POST['payment_method'] ?? '';
     $receiptNo = trim($_POST['receipt_no'] ?? '');
 
-    if ($customerName === '' || $customerContact === '' || $amount <= 0 || !in_array($paymentMethod, ['cash', 'gcash'], true) || $receiptNo === '') {
+    if ($amount <= 0 || !in_array($paymentMethod, ['cash', 'gcash'], true) || $receiptNo === '') {
         setFlash('error', 'Please fill out all required fields correctly.');
         header('Location: /laundry/laundry/order_new.php');
         exit;
@@ -112,23 +112,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 require __DIR__ . '/includes/header.php';
+
+$extra_scripts = <<<'HTML'
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js"></script>
+<script src="/laundry/laundry/assets/js/receipt_scan.js"></script>
+<script>
+document.getElementById('order_form_clear').addEventListener('click', function () {
+  var r = document.getElementById('receipt_no');
+  var n = document.getElementById('customer_name');
+  var c = document.getElementById('customer_contact');
+  var a = document.getElementById('amount');
+  var p = document.getElementById('receipt_photo');
+  var pm = document.querySelector('#order_form select[name="payment_method"]');
+  var st = document.getElementById('receipt_scan_status');
+  if (r) r.value = '';
+  if (n) n.value = '';
+  if (c) c.value = '';
+  if (a) a.value = '';
+  if (p) p.value = '';
+  if (pm) pm.value = 'cash';
+  if (st) {
+    st.classList.add('d-none');
+    st.textContent = '';
+    st.innerHTML = '';
+    st.classList.remove('alert-success', 'alert-warning', 'alert-info');
+  }
+});
+</script>
+HTML;
 ?>
 
 <div class="card shadow-sm">
-  <div class="card-header fw-semibold">New Order Entry</div>
   <div class="card-body">
-    <form method="post" enctype="multipart/form-data" class="row g-3">
-      <div class="col-12 col-md-6">
-        <label class="form-label">Customer Name</label>
-        <input type="text" name="customer_name" class="form-control form-control-lg" required>
+    <form id="order_form" method="post" enctype="multipart/form-data" class="row g-3">
+      <div class="col-12">
+        <label class="form-label">Receipt Photo</label>
+        <input type="file" id="receipt_photo" name="receipt_photo" class="form-control form-control-lg" accept="image/*" capture="environment" required>
       </div>
-      <div class="col-12 col-md-6">
-        <label class="form-label">Contact Number</label>
-        <input type="text" name="customer_contact" class="form-control form-control-lg" required>
+      <div class="col-12 col-md-6 d-none" aria-hidden="true">
+        <label class="form-label" for="receipt_template">Receipt layout</label>
+        <select id="receipt_template" class="form-select form-select-lg">
+          <option value="auto" selected>Auto-detect (main vs backup)</option>
+          <option value="main">Main invoice (SERVICE INVOICE)</option>
+          <option value="backup">Backup receipt (SERVICE RECEIPT)</option>
+        </select>
+      </div>
+      <div class="col-12 d-flex align-items-end">
+        <div id="receipt_scan_status" class="alert alert-secondary py-2 small mb-0 w-100 d-none" role="status"></div>
+      </div>
+      <div class="col-12">
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <label class="form-label mb-0 text-nowrap" for="receipt_no">Receipt Number</label>
+          <input type="text" id="receipt_no" name="receipt_no" class="form-control form-control-sm receipt-no-input" required autocomplete="off">
+        </div>
       </div>
       <div class="col-12 col-md-4">
-        <label class="form-label">Amount</label>
-        <input type="number" step="0.01" min="0.01" name="amount" class="form-control form-control-lg" required>
+        <label class="form-label" for="customer_name">Customer Name <span class="text-muted fw-normal">(optional)</span></label>
+        <input type="text" id="customer_name" name="customer_name" class="form-control form-control-lg" autocomplete="off">
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label" for="customer_contact">Contact Number <span class="text-muted fw-normal">(optional)</span></label>
+        <input type="text" id="customer_contact" name="customer_contact" class="form-control form-control-lg" autocomplete="off">
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label" for="amount">Amount</label>
+        <input type="number" id="amount" step="0.01" min="0.01" name="amount" class="form-control form-control-lg" required>
       </div>
       <div class="col-12 col-md-4">
         <label class="form-label">Payment Method</label>
@@ -137,16 +185,9 @@ require __DIR__ . '/includes/header.php';
           <option value="gcash">GCash</option>
         </select>
       </div>
-      <div class="col-12 col-md-4">
-        <label class="form-label">Receipt Number</label>
-        <input type="text" name="receipt_no" class="form-control form-control-lg" required>
-      </div>
-      <div class="col-12">
-        <label class="form-label">Receipt Photo</label>
-        <input type="file" name="receipt_photo" class="form-control form-control-lg" accept="image/*" capture="environment" required>
-      </div>
-      <div class="col-12">
-        <button class="btn btn-primary btn-lg w-100 w-md-auto">Save Order</button>
+      <div class="col-12 d-flex flex-wrap gap-2">
+        <button type="submit" class="btn btn-primary btn-lg">Save Order</button>
+        <button type="button" id="order_form_clear" class="btn btn-outline-secondary btn-lg">Clear</button>
       </div>
     </form>
   </div>
